@@ -5,8 +5,9 @@ from django.db import models
 
 
 class User(models.Model):
-    username = models.CharField(max_length=100)
+    username = models.CharField('пользовательский ник', max_length=100)
     email = models.EmailField(
+        'эмейл',
         max_length=254,
         unique=True,
         blank=False,
@@ -53,7 +54,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField('имя', max_length=100)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -71,8 +72,8 @@ class Title(models.Model):
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.username
