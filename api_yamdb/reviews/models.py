@@ -1,37 +1,39 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth import get_user_model
 
-# Create your models here.
-from django.db import models
+
+user = get_user_model()
 
 
-class User(models.Model):
-    username = models.CharField('пользовательский ник', max_length=100)
-    email = models.EmailField(
-        'эмейл',
-        max_length=254,
-        unique=True,
-        blank=False,
-        null=False
-    )
-    first_name = models.CharField(
-        'имя',
-        max_length=150,
-        blank=True
-    )
-    last_name = models.CharField(
-        'фамилия',
-        max_length=150,
-        blank=True
-    )
+# class User(models.Model):
+#     username = models.CharField('пользовательский ник', max_length=100)
+#     email = models.EmailField(
+#         'эмейл',
+#         max_length=254,
+#         unique=True,
+#         blank=False,
+#         null=False
+#     )
+#     first_name = models.CharField(
+#         'имя',
+#         max_length=150,
+#         blank=True
+#     )
+#     last_name = models.CharField(
+#         'фамилия',
+#         max_length=150,
+#         blank=True
+#     )
 
-    class Meta:
-        ordering = ('id',)
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+#     class Meta:
+#         ordering = ('id',)
+#         verbose_name = 'Пользователь'
+#         verbose_name_plural = 'Пользователи'
 
-    def __str__(self):
-        return self.username
-    # Добавьте другие поля, необходимые для модели пользователя
+#     def __str__(self):
+#         return self.username
+#     # Добавьте другие поля, необходимые для модели пользователя
 
 
 class Category(models.Model):
@@ -54,7 +56,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField('имя', max_length=100)
+    name = models.CharField('название произведения', max_length=100)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -69,6 +71,11 @@ class Title(models.Model):
         null=True,
         blank=True
     )
+    rating = models.IntegerField(
+        'рейтинг',
+        default=None,
+        null=True,
+    )
 
     class Meta:
         ordering = ('id',)
@@ -76,7 +83,7 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
-        return self.username
+        return self.name
     # Добавьте другие поля, необходимые для модели произведения
 
 
@@ -88,16 +95,26 @@ class Review(models.Model):
         verbose_name='произведение'
     )
     author = models.ForeignKey(
-        User,
+        user,
         on_delete=models.CASCADE,
-        related_name='comments',
+        related_name='reviews',
         verbose_name='автор'
     )
-    user_id = models.IntegerField()  # Временное обходное решение
-    text = models.CharField(
-        max_length=300
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
     )
-    rating = models.IntegerField()  # Можно назвать score скорее всего
+    text = models.TextField(
+        'текст отзыва',
+        null=False
+    )
+    score = models.IntegerField(
+        'оценка произведения',
+        default=0,
+        validators=[
+            MaxValueValidator(10),
+            MinValueValidator(1)
+        ],
+    )
 
     class Meta:
         verbose_name = 'Отзыв'
@@ -105,4 +122,32 @@ class Review(models.Model):
 
     def __str__(self):
         return self.text
-    # Добавьте другие поля, необходимые для модели отзывов
+
+
+class Comment(models.Model):
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='отзыв'
+    )
+    text = models.TextField(
+        'текст комментария',
+        null=False
+    )
+    author = models.ForeignKey(
+        user,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='автор'
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
