@@ -11,14 +11,24 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('author', 'title')
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = ('id', 'review', 'text', 'author', 'pub_date')
+        read_only_fields = ('author', 'review')
