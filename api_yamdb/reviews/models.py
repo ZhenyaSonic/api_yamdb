@@ -52,7 +52,7 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return f'{self.name} {self.name}'
+        return f'{self.name}'
 
 
 class Title(models.Model):
@@ -137,6 +137,7 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='отзыв'
     )
+    title = models.IntegerField()
     text = models.TextField(
         'текст комментария',
         null=False
@@ -154,12 +155,6 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['review', 'author'],
-                name='unique_review_author'
-            )
-        ]
 
     def __str__(self):
         return self.text
