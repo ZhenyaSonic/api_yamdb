@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from .views import Signup
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +26,6 @@ urlpatterns = [
         name='redoc'
     ),
     path('api/', include('api.urls')),
+    path('api/v1/auth/signup/', Signup.as_view(), name='user-signup'),
+
 ]

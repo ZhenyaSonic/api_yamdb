@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime, timedelta
+from django.http import HttpResponseBadRequest
 import random
 import string
 
@@ -40,6 +41,11 @@ class UserSignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        if not request.data:
+            return HttpResponseBadRequest(
+                'No data provided. Please provide the necessary data in your POST request.'
+            )
+
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -82,11 +88,27 @@ class UserSignupView(APIView):
         from_email = settings.DEFAULT_FROM_EMAIL
         send_mail(subject, message, from_email, [email])
 
+    permission_classes = [IsAuthenticated]
+
+    # def patch(self, request, *args, **kwargs):
+    #     serializer = UserProfileUpdateSerializer(
+    #         instance=request.user, data=request.data, partial=True
+    #     )
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
+        if not request.data:
+            return HttpResponseBadRequest(
+                'No data provided. Please provide the necessary data in your PATCH request.'
+            )
+
         serializer = UserProfileUpdateSerializer(
             instance=request.user, data=request.data, partial=True
         )

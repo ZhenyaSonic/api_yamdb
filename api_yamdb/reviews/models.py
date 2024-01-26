@@ -1,8 +1,8 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
-from users.constants import (
+from django.contrib.auth.models import AbstractUser, Permission, Group
+from api.constants import (
     MAX_LENGTH_BIO,
     MAX_LENGTH_EMAIL,
     MAX_LENGTH_NAME,
@@ -56,6 +56,18 @@ class CustomUser(AbstractUser):
         'Поле с кодом подтверждения',
         max_length=6
     )
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name='Группы',
+        blank=True,
+        related_name='custom_users'
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name='Права пользователя',
+        blank=True,
+        related_name='custom_users'
+    )
 
     class Meta:
         verbose_name = 'пользователь'
@@ -70,36 +82,6 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
-
-
-# class User(models.Model):
-#     username = models.CharField('пользовательский ник', max_length=100)
-#     email = models.EmailField(
-#         'эмейл',
-#         max_length=254,
-#         unique=True,
-#         blank=False,
-#         null=False
-#     )
-#     first_name = models.CharField(
-#         'имя',
-#         max_length=150,
-#         blank=True
-#     )
-#     last_name = models.CharField(
-#         'фамилия',
-#         max_length=150,
-#         blank=True
-#     )
-
-#     class Meta:
-#         ordering = ('id',)
-#         verbose_name = 'Пользователь'
-#         verbose_name_plural = 'Пользователи'
-
-#     def __str__(self):
-#         return self.username
-#     # Добавьте другие поля, необходимые для модели пользователя
 
 
 class Category(models.Model):
@@ -150,7 +132,6 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-    # Добавьте другие поля, необходимые для модели произведения
 
 
 class Review(models.Model):
