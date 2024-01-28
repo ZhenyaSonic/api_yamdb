@@ -1,12 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 from api_yamdb.constants import (
     MAX_LENGTH_BIO,
     MAX_LENGTH_EMAIL,
     MAX_LENGTH_NAME,
     MAX_LENGTH_ROLE,
     USER_ROLES,
+    ADMIN, USER, MODERATOR
 )
 
 
@@ -52,6 +54,18 @@ class CustomUser(AbstractUser):
         'Поле с кодом подтверждения',
         max_length=6
     )
+
+    @property
+    def is_user(self):
+        return self.role == USER
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
 
     class Meta:
         verbose_name = 'пользователь'
