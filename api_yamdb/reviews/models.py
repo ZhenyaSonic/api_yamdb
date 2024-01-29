@@ -136,7 +136,7 @@ class Review(models.Model):
         verbose_name='произведение'
     )
     author = models.ForeignKey(
-        User,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='автор'
