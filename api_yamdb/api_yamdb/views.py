@@ -28,7 +28,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
     def perform_create(self, serializer):
-        # Если разрешение проверено, создаем пользователя
         serializer.save()
 
     def partial_update(self, request, *args, **kwargs):
@@ -68,7 +67,6 @@ class Signup(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username', '')
 
-        # Проверка, что значение username не равно "me"
         if username.lower() == 'me':
             return Response(
                 {
@@ -101,7 +99,6 @@ class Signup(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         if request.user.is_authenticated and request.user.is_staff:
-            # Возвращаем успешный статус 200 для администраторов
             return Response(
                 {'detail': 'Admin users registered successfully.'},
                 status=status.HTTP_200_OK
