@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.core.mail import send_mail
 from django.conf import settings
 
-from reviews.models import CustomUser
+from reviews.models import CustomUser, Category, Genres, Title, Review
 from .constants import MAX_LENGTH_NAME, MAX_LENGTH_EMAIL
 
 
@@ -116,3 +116,33 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('username', 'confirmation_code')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genres
+        fields = '__all__'
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Title
+        fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
