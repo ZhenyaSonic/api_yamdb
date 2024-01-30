@@ -16,5 +16,5 @@ urlpatterns = [
     ),
     path('api/v1/auth/signup/', Signup.as_view(), name='user-signup'),
     path('api/v1/auth/token/', Token.as_view(), name='token'),
-    path('api/v1/', include(router.urls)),
+    path('api/', include('api.urls')),
 ]
