@@ -165,7 +165,7 @@ class CategoriesViewSet(ReviewGenreModelMixin):
 class GenresViewSet(ReviewGenreModelMixin):
     queryset = Genres.objects.all()
     serializer_class = GenreSerializer
-
+    pagination_class = CommentPagination
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

@@ -121,13 +121,13 @@ class TokenSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genres
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
