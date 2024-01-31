@@ -1,3 +1,5 @@
+from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, generics, filters, mixins
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,6 +15,7 @@ from rest_framework.permissions import (
 
 from reviews.models import CustomUser, Category, Genres, Title
 from api.paginator import CommentPagination
+from api.filters import TitleFilter
 from .serializers import (
     CustomUserSerializer,
     SignUpSerializer, TokenSerializer,
@@ -26,7 +29,7 @@ from .permissions import (
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    ReviewSerializer)
+    ReviewSerializer, TitlesSerializer, TitlesViewSerializer,)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -140,6 +143,22 @@ class Token(APIView):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data)
+
+
+class TitlesViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    serializer_class = TitlesSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    pagination_class = PageNumberPagination
+    filterset_class = TitleFilter
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitlesViewSerializer
+        return TitlesSerializer
 
 
 class ReviewGenreModelMixin(

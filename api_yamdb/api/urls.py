@@ -5,11 +5,15 @@ from api.views import (
     CategoriesViewSet,
     GenresViewSet,
     ReviewViewSet,
+    TitlesViewSet,
+    UsersViewSet
 )
 
 app_name = 'api'
 
 router = DefaultRouter()
+router.register('users', UsersViewSet, basename='users')
+router.register('titles', TitlesViewSet)
 router.register('genres', GenresViewSet, basename='genres')
 router.register('categories', CategoriesViewSet, basename='categories')
 router.register(

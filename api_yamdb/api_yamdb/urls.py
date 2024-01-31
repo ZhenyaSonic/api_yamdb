@@ -6,7 +6,7 @@ from api.views import Signup, Token, UsersViewSet
 
 
 router = DefaultRouter()
-router.register(r'users', UsersViewSet, basename='users')
+router.register('users', UsersViewSet, basename='users')
 
 urlpatterns = [
     path(

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from .validators import validate_year
 
 from api.constants import (
     MAX_LENGTH_BIO,
@@ -101,31 +101,53 @@ class Category(models.Model):
         return f'{self.name} {self.name}'
 
 
+class Genres(models.Model):
+    """Модель жанры, многое к многому"""
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.slug
+
+
 class Title(models.Model):
-    name = models.CharField(max_length=100)
+    """Модель Произведение, базовая модель"""
+
+    name = models.CharField(max_length=256)
+    year = models.IntegerField(
+        'Год релиза',
+        validators=[validate_year],
+        help_text='Введите год релиза'
+    )
+    genre = models.ManyToManyField(Genres, through='GenreTitle')
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        related_name='titles',
-        verbose_name='категория',
+        verbose_name='Категория',
+        help_text='Введите категорию произведения',
         null=True,
-        blank=True
+        blank=True,
+        related_name='titles'
     )
     description = models.TextField(
-        'описание',
-        max_length=255,
         null=True,
-        blank=True
+        verbose_name='Описание'
     )
 
     class Meta:
-        ordering = ('id',)
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
-    def __str__(self):
-        return self.username
-    # Добавьте другие поля, необходимые для модели произведения
+    def __str__(self) -> str:
+        return self.name
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genres, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f'{self.genre} {self.title}'
 
 
 class Review(models.Model):
@@ -145,7 +167,7 @@ class Review(models.Model):
     text = models.CharField(
         max_length=300
     )
-    rating = models.IntegerField()  # Можно назвать score скорее всего
+    score = models.IntegerField()  # Можно назвать score скорее всего
 
     class Meta:
         verbose_name = 'Отзыв'
@@ -154,12 +176,3 @@ class Review(models.Model):
     def __str__(self):
         return self.text
     # Добавьте другие поля, необходимые для модели отзывов
-
-
-class Genres(models.Model):
-    """Модель жанры, многое к многому"""
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.slug
