@@ -1,4 +1,3 @@
-from rest_framework.permissions import BasePermission
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
@@ -19,7 +18,6 @@ class AdminOnlyPermission(BasePermission):
         return request.user and request.user.is_staff
 
     def has_create_permission(self, request, view):
-        # Добавьте проверку на разрешение создания пользователя
         return (
             request.user and request.user.is_staff
             and request.user.has_perm('create_user_permission')
@@ -54,3 +52,22 @@ class ModerAuthenticatedOrReadOnly(BasePermission):
                 and (
                     obj.author == request.user
                     or request.user.is_moderator)))
+
+
+class Review_Comment_permission(BasePermission):
+    def has_permission(self, request, view):
+        return (request.method in SAFE_METHODS
+                or request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == 'PATCH' or request.method == 'DELETE':
+            if request.user.role == 'user' and request.user == obj.author:
+                return True
+            if (request.user.role == 'moderator'
+               or request.user.role == 'admin'):
+                return True
+        if request.method == 'GET' and request.user.is_authenticated:
+            return True
+        if request.method == 'GET':
+            return True
+        return False
