@@ -1,7 +1,13 @@
 import csv
 from django.db import transaction
 from django.core.management.base import BaseCommand
-from reviews.models import Category, Comment, Genres, GenreTitle, Review, Title, CustomUser
+from reviews.models import (Category,
+                            Comment,
+                            Genres,
+                            GenreTitle,
+                            Review,
+                            Title,
+                            CustomUser)
 
 model_csv_equal = {
     'static/data/category.csv': Category,
