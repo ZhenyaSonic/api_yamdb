@@ -202,7 +202,6 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='отзыв'
     )
-    title = models.IntegerField()
     text = models.TextField(
         'текст комментария',
         null=False

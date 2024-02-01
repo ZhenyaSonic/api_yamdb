@@ -1,14 +1,14 @@
 import csv
 from django.db import transaction
 from django.core.management.base import BaseCommand
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title, User
+from reviews.models import Category, Comment, Genres, GenreTitle, Review, Title, CustomUser
 
 model_csv_equal = {
     'static/data/category.csv': Category,
-    'static/data/genre.csv': Genre,
+    'static/data/genre.csv': Genres,
     'static/data/titles.csv': Title,
     'static/data/genre_title.csv': GenreTitle,
-    'static/data/users.csv': User,
+    'static/data/users.csv': CustomUser,
     'static/data/review.csv': Review,
     'static/data/comments.csv': Comment,
 }
@@ -21,7 +21,7 @@ class Command(BaseCommand):
         """Дополняет строку таблицы экземплярами модели."""
         try:
             if row.get('author'):
-                row['author'] = User.objects.get(pk=row['author'])
+                row['author'] = CustomUser.objects.get(pk=row['author'])
             if row.get('review_id'):
                 row['review'] = Review.objects.get(pk=row['review_id'])
             if row.get('title_id'):
@@ -29,7 +29,7 @@ class Command(BaseCommand):
             if row.get('category'):
                 row['category'] = Category.objects.get(pk=row['category'])
             if row.get('genre'):
-                row['genre'] = Genre.objects.get(pk=row['genre'])
+                row['genre'] = Genres.objects.get(pk=row['genre'])
         except Exception as error:
             print(f'Ошибка в строке {row.get("id")}.\n'
                   f'Текст - {error}')
