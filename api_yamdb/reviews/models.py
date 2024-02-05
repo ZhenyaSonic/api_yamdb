@@ -1,4 +1,5 @@
 from django.db import models
+from enum import Enum
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -8,12 +9,17 @@ from api.constants import (
     MAX_LENGTH_EMAIL,
     MAX_LENGTH_NAME,
     MAX_LENGTH_ROLE,
-    USER_ROLES,
     ADMIN, USER, MODERATOR
 )
 
 
-class CustomUser(AbstractUser):
+class UserRole(Enum):
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+
+
+class User(AbstractUser):
     username = models.CharField(
         verbose_name='Уникальный login пользователя',
         max_length=MAX_LENGTH_NAME,
@@ -41,8 +47,8 @@ class CustomUser(AbstractUser):
     role = models.CharField(
         verbose_name='Роль пользователя',
         max_length=MAX_LENGTH_ROLE,
-        choices=USER_ROLES,
-        default='user',
+        choices=[(role.value, role.name) for role in UserRole],
+        default=UserRole.USER.value,
         blank=True,
         help_text='Выберете роль пользователя'
     )
@@ -159,7 +165,7 @@ class Review(models.Model):
         verbose_name='произведение'
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='автор'
@@ -207,7 +213,7 @@ class Comment(models.Model):
         null=False
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='автор'
