@@ -7,37 +7,37 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.core.mail import send_mail
 from django.conf import settings
 
-from reviews.models import CustomUser, Category, Genres, Title, Review, Comment
+from reviews.models import User, Category, Genres, Title, Review, Comment
 from .constants import MAX_LENGTH_NAME, MAX_LENGTH_EMAIL
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
         required=True,
         max_length=150,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())]
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
     email = serializers.EmailField(
         required=True,
         max_length=254,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())]
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
         lookup_field = 'username'
 
 
-class UserProfileUpdateSerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('first_name', 'last_name', 'email', 'bio', 'role')
 
 
-class CustomRoleSerializer(CustomUserSerializer):
+class RoleSerializer(UserSerializer):
 
     role = serializers.CharField(read_only=True)
 
@@ -54,14 +54,21 @@ class SignUpSerializer(serializers.ModelSerializer):
         max_length=MAX_LENGTH_EMAIL
     )
 
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Username "me" is not allowed.'
+            )
+        return value
+
     class Meta:
-        model = CustomUser
+        model = User
         lookup_field = 'username'
         fields = ('email', 'username')
 
         validators = [
             serializers.UniqueTogetherValidator(
-                queryset=CustomUser.objects.all(),
+                queryset=User.objects.all(),
                 fields=('username', 'email',),
                 message=('Такой пользователь уже зарегистрирован.')
             )
@@ -72,22 +79,26 @@ class SignUpSerializer(serializers.ModelSerializer):
         username = validated_data.get('username')
         confirmation_code = random.randint(100000, 999999)
 
-        if not CustomUser.objects.filter(
-                username=username,
-                email=email).exists():
-            user = CustomUser.objects.create(
-                email=email,
-                username=username,
-                confirmation_code=confirmation_code)
-            send_mail(
-                subject=f'Подтверждение регистрации {username}',
-                message=f'Ваш код подтверждения: {confirmation_code}',
-                from_email=f'{settings.EMAIL_SENDER}',
-                recipient_list=[validated_data['email']],
-                fail_silently=False)
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+            defaults={'confirmation_code': confirmation_code}
+        )
 
-            return user
-        return CustomUser.objects.filter(username=username, email=email)
+        if not created:
+            raise serializers.ValidationError(
+                {'detail': 'Такой пользователь уже зарегистрирован.'}
+            )
+
+        send_mail(
+            subject=f'Подтверждение регистрации {username}',
+            message=f'Ваш код подтверждения: {confirmation_code}',
+            from_email=f'{settings.EMAIL_SENDER}',
+            recipient_list=[validated_data['email']],
+            fail_silently=False
+        )
+
+        return user
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -101,7 +112,7 @@ class TokenSerializer(serializers.ModelSerializer):
         username = data.get('username')
         confirmation_code = data.get('confirmation_code')
 
-        user = get_object_or_404(CustomUser, username=username)
+        user = get_object_or_404(User, username=username)
         if user is None:
             raise serializers.ValidationError(
                 'Такого пользоателя не сущестует')
@@ -111,10 +122,13 @@ class TokenSerializer(serializers.ModelSerializer):
 
         access = AccessToken.for_user(user)
 
-        return {'token': str(access)}
+        return {'token': access}
+
+    def to_representation(self, instance):
+        return {'token': str(instance['token'])}
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('username', 'confirmation_code')
 
 

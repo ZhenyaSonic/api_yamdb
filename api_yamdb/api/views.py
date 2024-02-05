@@ -13,19 +13,19 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly
 )
 
-from reviews.models import CustomUser, Category, Genres, Title, Review, Comment
+from reviews.models import User, Category, Genres, Title, Review, Comment
 from api.paginator import CommentPagination
 from api.filters import TitleFilter
 from .serializers import (
-    CustomUserSerializer,
+    UserSerializer,
     SignUpSerializer,
     TokenSerializer,
-    CustomRoleSerializer,
+    RoleSerializer,
     ReviewSerializer,
     CommentSerializer
 )
 from .permissions import (
-    IsAdminWithToken,
+    IsAdmin,
     IsAdminOrReadOnly,
     Review_Comment_permission
 )
@@ -40,9 +40,9 @@ HTTP_METHODS = ['get', 'post', 'patch', 'delete']
 
 class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
-    serializer_class = CustomUserSerializer
-    queryset = CustomUser.objects.all()
-    permission_classes = [IsAdminWithToken]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    permission_classes = [IsAdmin]
     http_method_names = HTTP_METHODS
     filter_backends = [SearchFilter]
     search_fields = ('username',)
@@ -51,34 +51,26 @@ class UsersViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
-    def partial_update(self, request, *args, **kwargs):
-        user = get_object_or_404(
-            CustomUser,
-            username=self.kwargs[self.lookup_field]
-        )
-        serializer = self.get_serializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
     @action(
-        methods=['GET', 'PATCH'],
+        methods=['GET'],
         detail=False,
         url_path='me',
         permission_classes=(IsAuthenticated,)
     )
     def user_detail(self, request):
-        serializer = CustomUserSerializer(request.user)
-        if request.method == 'PATCH':
-            serializer = CustomRoleSerializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    @user_detail.mapping.patch
+    def user_detail_patch(self, request):
+        serializer = RoleSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Signup(generics.CreateAPIView):
@@ -88,33 +80,25 @@ class Signup(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username', '')
 
-        if username.lower() == 'me':
-            return Response(
-                {
-                    'detail': 'Username "me" is not allowed.'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         email = request.data.get('email')
         username = request.data.get('username')
 
         if (
-            username and CustomUser.objects.filter(username=username).exists()
-            and email and CustomUser.objects.filter(email=email).exists()
+            username and User.objects.filter(username=username).exists()
+            and email and User.objects.filter(email=email).exists()
         ):
             return Response(
                 {'detail': 'User already exists.'},
                 status=status.HTTP_200_OK
             )
 
-        if email and CustomUser.objects.filter(email=email).exists():
+        if email and User.objects.filter(email=email).exists():
             return Response(
                 {'detail': 'User with this email already exists.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if username and CustomUser.objects.filter(username=username).exists():
+        if username and User.objects.filter(username=username).exists():
             return Response(
                 {'detail': 'User with this username already exists.'},
                 status=status.HTTP_400_BAD_REQUEST
