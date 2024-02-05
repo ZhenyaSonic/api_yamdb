@@ -32,7 +32,7 @@ from .permissions import (
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    ReviewSerializer, TitlesSerializer, TitlesViewSerializer,)
+    TitlesSerializer, TitlesViewSerializer,)
 
 
 HTTP_METHODS = ['get', 'post', 'patch', 'delete']
@@ -140,7 +140,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filterset_class = TitleFilter
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:

@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from .validators import validate_year
-from api.constants import (
+from .constants import (
     MAX_LENGTH_BIO,
     MAX_LENGTH_EMAIL,
     MAX_LENGTH_NAME,

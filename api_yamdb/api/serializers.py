@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 from reviews.models import User, Category, Genres, Title, Review, Comment
-from .constants import MAX_LENGTH_NAME, MAX_LENGTH_EMAIL
+from reviews.constants import MAX_LENGTH_NAME, MAX_LENGTH_EMAIL
 
 
 class UserSerializer(serializers.ModelSerializer):
