@@ -66,23 +66,25 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(
-        methods=['GET', 'PATCH'],
+        methods=['GET'],
         detail=False,
         url_path='me',
         permission_classes=(IsAuthenticated,)
     )
     def user_detail(self, request):
         serializer = CustomUserSerializer(request.user)
-        if request.method == 'PATCH':
-            serializer = CustomRoleSerializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data)
+
+    @user_detail.mapping.patch
+    def user_detail_patch(self, request):
+        serializer = CustomRoleSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Signup(generics.CreateAPIView):
@@ -91,14 +93,6 @@ class Signup(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         username = request.data.get('username', '')
-
-        if username.lower() == 'me':
-            return Response(
-                {
-                    'detail': 'Username "me" is not allowed.'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         email = request.data.get('email')
         username = request.data.get('username')

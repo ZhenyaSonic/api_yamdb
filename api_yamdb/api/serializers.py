@@ -54,6 +54,13 @@ class SignUpSerializer(serializers.ModelSerializer):
         max_length=MAX_LENGTH_EMAIL
     )
 
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Username "me" is not allowed.'
+            )
+        return value
+
     class Meta:
         model = CustomUser
         lookup_field = 'username'
