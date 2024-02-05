@@ -25,7 +25,7 @@ from .serializers import (
     CommentSerializer
 )
 from .permissions import (
-    IsAdminWithToken,
+    IsAdmin,
     IsAdminOrReadOnly,
     Review_Comment_permission
 )
@@ -42,7 +42,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = [IsAdminWithToken]
+    permission_classes = [IsAdmin]
     http_method_names = HTTP_METHODS
     filter_backends = [SearchFilter]
     search_fields = ('username',)
@@ -50,16 +50,6 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
-
-    def partial_update(self, request, *args, **kwargs):
-        user = get_object_or_404(
-            User,
-            username=self.kwargs[self.lookup_field]
-        )
-        serializer = self.get_serializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
 
     @action(
         methods=['GET'],

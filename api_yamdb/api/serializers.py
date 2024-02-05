@@ -79,22 +79,26 @@ class SignUpSerializer(serializers.ModelSerializer):
         username = validated_data.get('username')
         confirmation_code = random.randint(100000, 999999)
 
-        if not User.objects.filter(
-                username=username,
-                email=email).exists():
-            user = User.objects.create(
-                email=email,
-                username=username,
-                confirmation_code=confirmation_code)
-            send_mail(
-                subject=f'Подтверждение регистрации {username}',
-                message=f'Ваш код подтверждения: {confirmation_code}',
-                from_email=f'{settings.EMAIL_SENDER}',
-                recipient_list=[validated_data['email']],
-                fail_silently=False)
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+            defaults={'confirmation_code': confirmation_code}
+        )
 
-            return user
-        return User.objects.filter(username=username, email=email)
+        if not created:
+            raise serializers.ValidationError(
+                {'detail': 'Такой пользователь уже зарегистрирован.'}
+            )
+
+        send_mail(
+            subject=f'Подтверждение регистрации {username}',
+            message=f'Ваш код подтверждения: {confirmation_code}',
+            from_email=f'{settings.EMAIL_SENDER}',
+            recipient_list=[validated_data['email']],
+            fail_silently=False
+        )
+
+        return user
 
 
 class TokenSerializer(serializers.ModelSerializer):
