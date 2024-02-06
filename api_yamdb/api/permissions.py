@@ -34,20 +34,15 @@ class ModerAuthenticatedOrReadOnly(BasePermission):
                  (obj.author == request.user or request.user.is_moderator)))
 
 
-class Review_Comment_permission(BasePermission):
+class ReviewCommentPermissions(BasePermission):
     def has_permission(self, request, view):
         return (request.method in SAFE_METHODS
                 or request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
         if request.method == 'PATCH' or request.method == 'DELETE':
-            if request.user.role == 'user' and request.user == obj.author:
-                return True
-            if (request.user.role == 'moderator'
+            if (request.user == obj.author
+               or request.user.role == 'moderator'
                or request.user.role == 'admin'):
                 return True
-        if request.method == 'GET' and request.user.is_authenticated:
-            return True
-        if request.method == 'GET':
-            return True
-        return False
+        return request.method in SAFE_METHODS
