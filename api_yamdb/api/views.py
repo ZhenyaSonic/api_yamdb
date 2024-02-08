@@ -133,7 +133,8 @@ class Token(APIView):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).prefetch_related('genre')
     serializer_class = TitlesSerializer
     permission_classes = [IsAdminOrReadOnly]
     http_method_names = HTTP_METHODS
