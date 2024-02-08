@@ -179,7 +179,7 @@ class GenresViewSet(ReviewGenreModelMixin):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthor | IsModerator,)
+    permission_classes = (IsAuthor | IsModerator | IsAdm,)
     http_method_names = HTTP_METHODS
 
     def get_title_id(self):

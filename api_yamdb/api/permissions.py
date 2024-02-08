@@ -44,10 +44,13 @@ class ReviewCommentPermissions(BasePermission):
         return request.method in SAFE_METHODS
 
 
-class IsAuthor(BasePermission):
+class IsAuthenticatedMixin(BasePermission):
     def has_permission(self, request, view):
         return (request.method in SAFE_METHODS
                 or request.user.is_authenticated)
+
+
+class IsAuthor(IsAuthenticatedMixin):
 
     def has_object_permission(self, request, view, obj):
         if request.method in ALLOWED_METHODS:
@@ -57,10 +60,12 @@ class IsAuthor(BasePermission):
         return request.method in SAFE_METHODS
 
 
-class IsModerator(BasePermission):
-    def has_permission(self, request, view):
-        return (request.method in SAFE_METHODS
-                or (request.user.is_authenticated and request.user.is_moderator))
+class IsModerator(IsAuthenticatedMixin):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ALLOWED_METHODS:
+            return ((request.user.is_authenticated and request.user.is_moderator))
+        return request.method in SAFE_METHODS
 
     # def has_object_permission(self, request, view, obj):
     #     if request.method in ALLOWED_METHODS:
@@ -69,10 +74,12 @@ class IsModerator(BasePermission):
     #     return request.method in SAFE_METHODS
 
 
-class IsAdm(BasePermission):
-    def has_permission(self, request, view):
-        return (request.method in SAFE_METHODS
-                or (request.user.is_authenticated and request.user.is_admin))
+class IsAdm(IsAuthenticatedMixin):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ALLOWED_METHODS:
+            return (request.user.is_authenticated and request.user.is_admin)
+        return request.method in SAFE_METHODS
     
 
 class AdminModer(BasePermission):
