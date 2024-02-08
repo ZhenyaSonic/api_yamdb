@@ -96,17 +96,6 @@ class Signup(generics.CreateAPIView):
                 status=status.HTTP_200_OK
             )
 
-        if email and User.objects.filter(email=email).exists():
-            return Response(
-                {'detail': 'User with this email already exists.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if username and User.objects.filter(username=username).exists():
-            return Response(
-                {'detail': 'User with this username already exists.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         if request.user.is_authenticated and request.user.is_staff:
             return Response(
                 {'detail': 'Admin users registered successfully.'},

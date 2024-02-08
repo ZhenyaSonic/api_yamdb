@@ -61,6 +61,21 @@ class SignUpSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                {'detail': 'User with this email already exists.'}
+            )
+        return value
+
+    def validate(self, data):
+        username = data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise serializers.ValidationError(
+                {'detail': 'User with this username already exists.'}
+            )
+        return data
+
     class Meta:
         model = User
         lookup_field = 'username'
