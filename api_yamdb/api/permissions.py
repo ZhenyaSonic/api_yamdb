@@ -1,7 +1,11 @@
-from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework.permissions import (SAFE_METHODS,
+                                        BasePermission,
+                                        IsAuthenticatedOrReadOnly)
+
+ALLOWED_METHODS = ['PATCH', 'DELETE']
 
 
-class IsAdmin(BasePermission):
+class IsMainAdmin(BasePermission):
 
     def has_permission(self, request, view):
         return (request.user.is_authenticated
@@ -23,15 +27,19 @@ class IsAdminOrReadOnly(BasePermission):
         )
 
 
-class ReviewCommentPermissions(BasePermission):
-    def has_permission(self, request, view):
-        return (request.method in SAFE_METHODS
-                or request.user.is_authenticated)
+class IsAuthor(IsAuthenticatedOrReadOnly):
 
     def has_object_permission(self, request, view, obj):
-        if request.method == 'PATCH' or request.method == 'DELETE':
-            if (request.user == obj.author
-               or request.user.role == 'moderator'
-               or request.user.role == 'admin'):
-                return True
-        return request.method in SAFE_METHODS
+        return request.method in SAFE_METHODS or request.user == obj.author
+
+
+class IsModerator(IsAuthenticatedOrReadOnly):
+
+    def has_object_permission(self, request, view, obj):
+        return request.user.is_moderator
+
+
+class IsAdmin(IsAuthenticatedOrReadOnly):
+
+    def has_object_permission(self, request, view, obj):
+        return request.user.is_admin
