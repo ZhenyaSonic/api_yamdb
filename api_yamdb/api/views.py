@@ -25,12 +25,11 @@ from .serializers import (
     CommentSerializer
 )
 from .permissions import (
+    IsMainAdmin,
     IsAdmin,
     IsAdminOrReadOnly,
-    ReviewCommentPermissions,
     IsAuthor,
     IsModerator,
-    IsAdm
 )
 from .serializers import (
     CategorySerializer,
@@ -45,7 +44,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = [IsAdmin]
+    permission_classes = [IsMainAdmin]
     http_method_names = HTTP_METHODS
     filter_backends = [SearchFilter]
     search_fields = ('username',)
@@ -179,7 +178,7 @@ class GenresViewSet(ReviewGenreModelMixin):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthor | IsModerator | IsAdm,)
+    permission_classes = (IsAuthor | IsModerator | IsAdmin,)
     http_method_names = HTTP_METHODS
 
     def get_title_id(self):
@@ -196,7 +195,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthor, IsModerator, IsAdm)
+    permission_classes = (IsAuthor | IsModerator | IsAdmin,)
     http_method_names = HTTP_METHODS
 
     def get_comment_id(self):
