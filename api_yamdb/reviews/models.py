@@ -1,5 +1,5 @@
 from django.db import models
-from enum import Enum
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -13,10 +13,10 @@ from .constants import (
 )
 
 
-class UserRole(Enum):
-    USER = 'user'
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
+class UserRole(models.TextChoices):
+    USER = 'user', _('User')
+    ADMIN = 'admin', _('Admin')
+    MODERATOR = 'moderator', _('Moderator')
 
 
 class User(AbstractUser):
