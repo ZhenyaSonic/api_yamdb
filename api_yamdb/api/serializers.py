@@ -54,25 +54,26 @@ class SignUpSerializer(serializers.ModelSerializer):
         max_length=MAX_LENGTH_EMAIL
     )
 
-    def validate(self, data):
-        email = data.get('email')
-        username = data.get('username')
-
-        if username.lower() == 'me':
+    def validate_username(self, value):
+        if value.lower() == 'me':
             raise serializers.ValidationError(
                 'Username "me" is not allowed.'
             )
+        return value
 
-        if User.objects.filter(email=email).exists():
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
                 {'detail': 'User with this email already exists.'}
             )
+        return value
 
+    def validate(self, data):
+        username = data.get('username')
         if User.objects.filter(username=username).exists():
             raise serializers.ValidationError(
                 {'detail': 'User with this username already exists.'}
             )
-
         return data
 
     class Meta:
