@@ -25,7 +25,7 @@ from .serializers import (
     CommentSerializer
 )
 from .permissions import (
-    IsMainAdmin,
+    IsAdmin,
     IsAdminOrReadOnly,
     IsAuthorOrReadOnly,
     IsModeratorOrReadOnly,
@@ -43,7 +43,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = [IsMainAdmin]
+    permission_classes = [IsAdmin]
     http_method_names = HTTP_METHODS
     filter_backends = [SearchFilter]
     search_fields = ('username',)

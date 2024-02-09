@@ -5,7 +5,7 @@ from rest_framework.permissions import (SAFE_METHODS,
 ALLOWED_METHODS = ['PATCH', 'DELETE']
 
 
-class IsMainAdmin(BasePermission):
+class IsAdmin(BasePermission):
 
     def has_permission(self, request, view):
         return (request.user.is_authenticated
