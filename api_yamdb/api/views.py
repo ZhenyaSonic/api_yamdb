@@ -13,7 +13,7 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly
 )
 
-from reviews.models import User, Category, Genres, Title, Review, Comment
+from reviews.models import User, Category, Genres, Title, Review
 from api.paginator import CommentPagination
 from api.filters import TitleFilter
 from .serializers import (
@@ -25,9 +25,11 @@ from .serializers import (
     CommentSerializer
 )
 from .permissions import (
+    IsMainAdmin,
     IsAdmin,
     IsAdminOrReadOnly,
-    ReviewCommentPermissions,
+    IsAuthor,
+    IsModerator,
 )
 from .serializers import (
     CategorySerializer,
@@ -38,15 +40,11 @@ from .serializers import (
 HTTP_METHODS = ['get', 'post', 'patch', 'delete']
 
 
-def get_model_by_id(model, id):
-    return get_object_or_404(model, pk=id)
-
-
 class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = [IsAdmin]
+    permission_classes = [IsMainAdmin]
     http_method_names = HTTP_METHODS
     filter_backends = [SearchFilter]
     search_fields = ('username',)
@@ -96,17 +94,6 @@ class Signup(generics.CreateAPIView):
                 status=status.HTTP_200_OK
             )
 
-        if email and User.objects.filter(email=email).exists():
-            return Response(
-                {'detail': 'User with this email already exists.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if username and User.objects.filter(username=username).exists():
-            return Response(
-                {'detail': 'User with this username already exists.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         if request.user.is_authenticated and request.user.is_staff:
             return Response(
                 {'detail': 'Admin users registered successfully.'},
@@ -183,34 +170,34 @@ class GenresViewSet(ReviewGenreModelMixin):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (ReviewCommentPermissions,)
+    permission_classes = (IsAuthor | IsModerator | IsAdmin,)
     http_method_names = HTTP_METHODS
 
-    def perform_create(self, serializer):
+    def get_title_id(self):
         title_id = self.kwargs.get('title_id')
-        serializer.save(author=self.request.user,
-                        title=get_model_by_id(Title, title_id))
+        return get_object_or_404(Title, pk=title_id)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title_id())
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_model_by_id(Title, title_id)
-        return title.reviews.all()
+        title = self.get_title_id()
+        return title.reviews.select_related('author', 'title')
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = (ReviewCommentPermissions,)
+    permission_classes = (IsAuthor | IsModerator | IsAdmin,)
     http_method_names = HTTP_METHODS
 
-    def perform_create(self, serializer):
+    def get_comment_id(self):
         review_id = self.kwargs.get('review_id')
-        serializer.save(author=self.request.user,
-                        review=get_model_by_id(Review, review_id))
+        return get_object_or_404(Review, pk=review_id)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_comment_id())
 
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_model_by_id(Review, review_id)
-        return review.comments.all()
+        review = self.get_comment_id()
+        return review.comments.select_related('author', 'review')
