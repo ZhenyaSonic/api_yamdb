@@ -26,10 +26,10 @@ from .serializers import (
 )
 from .permissions import (
     IsMainAdmin,
-    IsAdmin,
+    # IsAdmin,
     IsAdminOrReadOnly,
-    IsAuthor,
-    IsModerator,
+    IsAuthorOrReadOnly,
+    IsModeratorOrReadOnly,
 )
 from .serializers import (
     CategorySerializer,
@@ -167,7 +167,8 @@ class GenresViewSet(ReviewGenreModelMixin):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthor | IsModerator | IsAdmin,)
+    permission_classes = (IsAuthorOrReadOnly | IsModeratorOrReadOnly
+                          | IsAdminOrReadOnly,)
     http_method_names = HTTP_METHODS
 
     def get_title_id(self):
@@ -184,16 +185,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthor | IsModerator | IsAdmin,)
+    permission_classes = (IsAuthorOrReadOnly | IsModeratorOrReadOnly
+                          | IsAdminOrReadOnly,)
     http_method_names = HTTP_METHODS
 
-    def get_comment_id(self):
+    def get_review_id(self):
         review_id = self.kwargs.get('review_id')
         return get_object_or_404(Review, pk=review_id)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, review=self.get_comment_id())
+        serializer.save(author=self.request.user, review=self.get_review_id())
 
     def get_queryset(self):
-        review = self.get_comment_id()
+        review = self.get_review_id()
         return review.comments.select_related('author', 'review')
