@@ -26,7 +26,6 @@ from .serializers import (
 )
 from .permissions import (
     IsMainAdmin,
-    # IsAdmin,
     IsAdminOrReadOnly,
     IsAuthorOrReadOnly,
     IsModeratorOrReadOnly,
